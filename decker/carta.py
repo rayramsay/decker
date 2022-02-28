@@ -54,7 +54,7 @@ class CartaBoard:
         deck.remove(self.goal_card)
         deck.shuffle()
 
-        grid_cards: List[Card] = deck.deal((self._cards_in_grid() - 2))
+        grid_cards: List[Card] = deck.deal((self._available_slots_in_grid() - 2))
         grid_cards.append(self.goal_card)
         shuffle(grid_cards)
 
@@ -68,13 +68,13 @@ class CartaBoard:
                         self.grid[i][j] = self.starting_card
                         self.player_location = (i, j)
 
-    def _cards_in_grid(self) -> int:
-        cards_in_grid = 0
+    def _available_slots_in_grid(self) -> int:
+        num_true = 0
         for row in self.grid:
             for elem in row:
-                if elem:
-                    cards_in_grid += 1
-        return cards_in_grid
+                if elem is True:
+                    num_true += 1
+        return num_true
 
     def show(self) -> None:
         print('\n'.join(''.join(str(i).center(5) for i in row) for row in self.grid))
