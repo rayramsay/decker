@@ -7,15 +7,9 @@ from typing import Dict, List, Optional, Union
 
 ### HELPER FUNCTIONS ##########################################################
 
-def default_court_mapping(aces_high: bool = True) -> Dict[int, str]:
-    court_mapping = {11: 'J', 12: 'Q', 13: 'K'}
-    if aces_high:
-        court_mapping[14] = 'A'
-    else:
-        court_mapping[1] = 'A'
-    return court_mapping
-
-
+# TODO: Maybe move this back to Deck but allow the creating of a base Deck with
+# the cards of one's choosing (it got moved out to allow shuffling of a list of
+# cards in `carta.py`)?
 def shuffle(lst: Union[list, deque]) -> None:
     # Move through the list of cards backwards: start at last card, stop at
     # first card, -1 step.
@@ -39,7 +33,7 @@ class Color(Enum):
 @total_ordering
 class Suit:
     def __init__(self, name: Optional[str], value: Optional[int] = None, color: Optional[Enum] = None) -> None:
-        name = name.capitalize() if isinstance(name, str) else ''  # TODO: None?
+        name = name.capitalize() if isinstance(name, str) else None
         if not color:
             if name in {'Diamonds', 'Hearts'}:
                 color = Color.RED
@@ -66,7 +60,8 @@ class Suit:
             'Cups': '\u222A',
             'Swords': '\u2694',
         }
-        return conversion.get(self.name)
+        if self.name:
+            return conversion.get(self.name)
 
     def _is_valid_operand(self, other):
         return hasattr(other, "value")
@@ -80,15 +75,6 @@ class Suit:
         if not self._is_valid_operand(other):
             return NotImplemented
         return self.value < other.value
-
-
-# Fake enum of ordered suits for instantiating indvidual cards that compare
-# correctly with those in the default PlayingCardDeck.
-class Suits:
-    CLUBS = Suit('Clubs', 1)
-    DIAMONDS = Suit('Diamonds', 2)
-    HEARTS = Suit('Hearts', 3)
-    SPADES = Suit('Spades', 4)
 
 
 ### CARDS #####################################################################
@@ -113,16 +99,22 @@ class PlayingCard(Card):
         super().__init__()
 
     def __repr__(self) -> str:
-        if not self.is_faceup:
-            return 'XX'
+        # TODO: Maybe move the "show card back" logic somewhere else and have
+        # repr always show the object? Maybe a display method?
+        # if not self.is_faceup:
+        #     return 'XX'
         return self._get_str()
 
     def _get_str(self) -> str:
-        value = self.char_value if self.char_value else self.value
+        value = self.char_value if self.char_value else str(self.value)
         suit = self.suit.short_name if self.suit.short_name else self.suit.name
         if value != 'Jkr':
-            spacer = '' if self.suit.short_name else ' of '
-            return f'{value}{spacer}{suit}'
+            if self.suit.short_name:
+                f'{value}{suit}'
+            elif self.suit.name:
+                return f'{value} of {suit}'
+            else:
+                return value
         else:
             return f'{self.suit.color} {value}'
 
@@ -197,8 +189,10 @@ class Deck:
 
 class PlayingCardDeck(Deck):
     def __init__(self, suits: Optional[List[Suit]] = None, court_mapping: Optional[Dict[int, str]] = None, aces_high: bool = True, include_jokers: bool = False):
-        self.suits = [Suit(name=name, value=value) for value, name in enumerate(['Clubs', 'Diamonds', 'Hearts', 'Spades'], 1)] if not suits else suits
-        self.court_mapping = default_court_mapping(aces_high) if not court_mapping else court_mapping
+        # By default, suits are not ranked; this makes it easier to instantiate
+        # playing cards that compare correctly with those in the default deck.
+        self.suits = [Suit(name) for name in ['Clubs', 'Diamonds', 'Hearts', 'Spades']] if not suits else suits
+        self.court_mapping = self.default_court_mapping(aces_high) if not court_mapping else court_mapping
         self.aces_high = aces_high
         self.include_jokers = include_jokers
         super().__init__()
@@ -221,8 +215,20 @@ class PlayingCardDeck(Deck):
             ]
             self.cards.extend(jokers)
 
+    @staticmethod
+    def default_court_mapping(aces_high: bool = True) -> Dict[int, str]:
+        court_mapping = {11: 'J', 12: 'Q', 13: 'K'}
+        if aces_high:
+            court_mapping[14] = 'A'
+        else:
+            court_mapping[1] = 'A'
+        return court_mapping
+
 
 if __name__ == "__main__":
     deck = PlayingCardDeck()
     deck.shuffle()
     deck.show()
+    for card in deck.cards:
+        print(card.is_faceup)
+        break
