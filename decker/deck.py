@@ -108,15 +108,14 @@ class PlayingCard(Card):
     def _get_str(self) -> str:
         value = self.char_value if self.char_value else str(self.value)
         suit = self.suit.short_name if self.suit.short_name else self.suit.name
-        if value != 'Jkr':
-            if self.suit.short_name:
-                f'{value}{suit}'
-            elif self.suit.name:
-                return f'{value} of {suit}'
-            else:
-                return value
-        else:
+        if (not self.suit.name and self.suit.color):
             return f'{self.suit.color} {value}'
+        elif self.suit.short_name:
+            return f'{value}{suit}'
+        elif self.suit.name:
+            return f'{value} of {suit}'
+        else:
+            return value
 
     def show_reverse(self) -> None:
         print(self._get_str())
@@ -226,9 +225,5 @@ class PlayingCardDeck(Deck):
 
 
 if __name__ == "__main__":
-    deck = PlayingCardDeck()
-    deck.shuffle()
+    deck = PlayingCardDeck(include_jokers=True)
     deck.show()
-    for card in deck.cards:
-        print(card.is_faceup)
-        break
