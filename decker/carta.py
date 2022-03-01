@@ -21,9 +21,9 @@ class CartaBoard:
     @staticmethod
     def create_grid(rows: int, columns: int) -> CartaGrid:
         grid = list()
-        for i in range(rows):
+        for _i in range(rows):
             row = list()
-            for j in range(columns):
+            for _j in range(columns):
                 row.append(True)
             grid.append(row)
         return grid
@@ -39,8 +39,14 @@ class CartaBoard:
                     return False
         return True
 
-    # TODO: `allowed_directions`
-    def __init__(self, deck: Deck, grid: CartaGrid, goal_card: Card, starting_card: Card, allowed_directions: Optional[List[Enum]] = None):
+    def __init__(
+        self,
+        deck: Deck,
+        grid: CartaGrid,
+        goal_card: Card,
+        starting_card: Card,
+        allowed_directions: Optional[List[Enum]] = None  # TODO
+    ) -> None:
         if not self.is_valid_grid(grid):
             raise ValueError(f'Invalid grid: {grid}')
         self.grid = grid

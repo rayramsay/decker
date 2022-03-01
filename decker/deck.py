@@ -32,7 +32,12 @@ class Color(Enum):
 
 @total_ordering
 class Suit:
-    def __init__(self, name: Optional[str], value: Optional[int] = None, color: Optional[Enum] = None) -> None:
+    def __init__(
+        self,
+        name: Optional[str],
+        value: Optional[int] = None,
+        color: Optional[Enum] = None
+    ) -> None:
         name = name.capitalize() if isinstance(name, str) else None
         if not color:
             if name in {'Diamonds', 'Hearts'}:
@@ -92,7 +97,12 @@ class Card:
 
 @total_ordering
 class PlayingCard(Card):
-    def __init__(self, suit: Suit, value: int, court_mapping: Optional[Dict[int, str]] = None) -> None:
+    def __init__(
+        self,
+        suit: Suit,
+        value: int,
+        court_mapping: Optional[Dict[int, str]] = None
+    ) -> None:
         self.suit = suit
         self.value = int(value)
         self.char_value = self._value_to_char(court_mapping)
@@ -187,11 +197,23 @@ class Deck:
 
 
 class PlayingCardDeck(Deck):
-    def __init__(self, suits: Optional[List[Suit]] = None, court_mapping: Optional[Dict[int, str]] = None, aces_high: bool = True, include_jokers: bool = False):
+    def __init__(
+        self,
+        suits: Optional[List[Suit]] = None,
+        court_mapping: Optional[Dict[int, str]] = None,
+        aces_high: bool = True,
+        include_jokers: bool = False
+    ):
         # By default, suits are not ranked; this makes it easier to instantiate
         # playing cards that compare correctly with those in the default deck.
-        self.suits = [Suit(name) for name in ['Clubs', 'Diamonds', 'Hearts', 'Spades']] if not suits else suits
-        self.court_mapping = self.default_court_mapping(aces_high) if not court_mapping else court_mapping
+        if not suits:
+            self.suits = [Suit(name) for name in ['Clubs', 'Diamonds', 'Hearts', 'Spades']]
+        else:
+            self.suits = suits
+        if not court_mapping:
+            self.court_mapping = self.default_court_mapping(aces_high)
+        else:
+            self.court_mapping = court_mapping
         self.aces_high = aces_high
         self.include_jokers = include_jokers
         super().__init__()
@@ -207,11 +229,17 @@ class PlayingCardDeck(Deck):
             for value in range(min_range, max_range):
                 self.cards.append(PlayingCard(suit, value, self.court_mapping))
         if self.include_jokers:
-            # Highest suit value and highest card value (for comparisons).
-            jokers = [
-                PlayingCard(Suit(name=None, value=len(self.suits) + 1, color=Color.RED), 16, {16: 'Jkr'}),
-                PlayingCard(Suit(name=None, value=len(self.suits) + 1, color=Color.BLACK), 16, {16: 'Jkr'})
-            ]
+            jokers = list()
+            joker_colors = [Color.RED, Color.BLACK]
+            for color in joker_colors:
+                # Highest suit value and highest card value (for comparisons).
+                jokers.append(
+                    PlayingCard(
+                        suit=Suit(None, 100, color),
+                        value=100,
+                        court_mapping={100: 'Jkr'}
+                    )
+                )
             self.cards.extend(jokers)
 
     @staticmethod
