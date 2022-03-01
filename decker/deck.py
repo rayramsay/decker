@@ -22,6 +22,7 @@ def shuffle(lst: Union[list, deque]) -> None:
 
 ### SUITS #####################################################################
 
+
 class Color(Enum):
     RED = auto()
     BLACK = auto()
@@ -84,6 +85,7 @@ class Suit:
 
 ### CARDS #####################################################################
 
+
 class Card:
     def __init__(self) -> None:
         self.is_faceup = False
@@ -111,8 +113,8 @@ class PlayingCard(Card):
     def __repr__(self) -> str:
         # TODO: Maybe move the "show card back" logic somewhere else and have
         # repr always show the object? Maybe a display method?
-        # if not self.is_faceup:
-        #     return 'XX'
+        if not self.is_faceup:
+            return 'XX'
         return self._get_str()
 
     def _get_str(self) -> str:
@@ -153,6 +155,7 @@ class PlayingCard(Card):
 
 
 ### DECK ######################################################################
+
 
 class Deck:
     def __init__(self) -> None:
@@ -220,7 +223,13 @@ class PlayingCardDeck(Deck):
         self._build()
 
     def __repr__(self):
-        return f'Deck of {len(self.cards)} cards. Suits: {self.suits} - Court mapping: {self.court_mapping} - Aces high? {self.aces_high} - Include jokers? {self.include_jokers}'
+        return (
+            f'Deck of {len(self.cards)} cards. '
+            f'Suits: {self.suits} - '
+            f'Court mapping: {self.court_mapping} - '
+            f'Aces high? {self.aces_high} - '
+            f'Include jokers? {self.include_jokers}'
+        )
 
     def _build(self):
         min_range = 2 if self.aces_high else 1
@@ -233,6 +242,9 @@ class PlayingCardDeck(Deck):
             joker_colors = [Color.RED, Color.BLACK]
             for color in joker_colors:
                 # Highest suit value and highest card value (for comparisons).
+                # TODO: What if we moved Joker creation to PlayingCard as a staticmethod?
+                # Would introduce dependency between the two classes, but provide a way to
+                # instantiate a Joker that compares correctly with those in the default deck.
                 jokers.append(
                     PlayingCard(
                         suit=Suit(None, 100, color),
